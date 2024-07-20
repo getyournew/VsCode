@@ -16,8 +16,6 @@ local Character = Lplayer.Character
 local Inputs = {}
 
 if getgenv().Values then table.clear(getgenv().Values) end
-if getgenv().Connection then table.clear(getgenv().Connection) end
-
 
 getgenv().Config = {}
 
@@ -62,15 +60,17 @@ function Funcs.SilentKill(Bool)
         end
         return Target
     end
-    getgenv().Connection.SilentKill = RS.Heartbeat:Connect(function(deltaTime)
-        local target = GetPlayer()
-        if target then
-            local args = {
-                [1] = target,
-                [2] = "30"
-            } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
-        end
-    end)
+    if getgenv().Config.SilentKill then
+        getgenv().Connection.SilentKill = RS.Heartbeat:Connect(function(deltaTime)
+            local target = GetPlayer()
+            if target then
+                local args = {
+                    [1] = target,
+                    [2] = "30"
+                } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
+            end
+        end)
+    end
 end
 
 
@@ -88,15 +88,17 @@ function Funcs.KillEnities(Bool)
         end
         return Target
     end
-    getgenv().Connection.KillEnities = RS.Heartbeat:Connect(function(deltaTime)
-        local target = Entities()
-        if target then
-            local args = {
-                [1] = Entities(),
-                [2] = "30"
-            } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
-        end
-    end)
+    if getgenv().Config.KillEnities then
+        getgenv().Connection.KillEnities = RS.Heartbeat:Connect(function(deltaTime)
+            local target = Entities()
+            if target then
+                local args = {
+                    [1] = Entities(),
+                    [2] = "30"
+                } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
+            end
+        end)
+    end
 end
 
 
