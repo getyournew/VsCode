@@ -1,1 +1,186 @@
+repeat task.wait() until game:IsLoaded()
 
+if getgenv().Connection then
+    for i,v in next, getgenv().Connection do
+        v:Disconnect()
+    end
+end
+
+local RS = game:GetService("RunService")
+local Player = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+local Lplayer = Player.LocalPlayer
+local Character = Lplayer.Character
+
+local Inputs = {}
+
+if getgenv().Values then table.clear(getgenv().Values) end
+if getgenv().Connection then table.clear(getgenv().Connection) end
+
+
+getgenv().Config = {}
+
+getgenv().Values = {
+    Kill_Range = 20
+}
+
+getgenv().Connection = {}
+
+local Funcs = {}
+
+function Funcs.SilentKill(Bool)
+    getgenv().Config.SilentKill = Bool
+    if Connection.SilentKill then Connection.SilentKill:Disconnect() end
+    local function GetPlayer()
+        for _,v in pairs(game:GetService("Players"):GetPlayers()) do
+            if v ~= game.Players.LocalPlayer then
+                if v.Team ~= game.Players.LocalPlayer.Team then
+                    if v.Character ~= nil then
+                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                if Distance < Values.Kill_Range then
+                                    Target = v.Character
+                                end
+                            end
+                        end
+                    end
+                else
+                    if v.Character ~= nil then
+                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                if Distance < Values.Kill_Range then
+                                    Target = v.Character
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return Target
+    end
+    getgenv().Connection.SilentKill = RS.Heartbeat:Connect(function(deltaTime)
+        local target = GetPlayer()
+        if target then
+            local args = {
+                [1] = target,
+                [2] = "30"
+            } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
+        end
+    end)
+end
+
+
+function Funcs.KillEnities(Bool)
+    getgenv().Config.KillEnities = Bool
+    if Connection.KillEnities then Connection.KillEnities:Disconnect() end
+    local function Entities()
+        for _,v in pairs(game.Workspace.Entities:GetChildren()) do
+            if v:FindFirstChild("HumanoidRootPart") then
+                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.HumanoidRootPart.Position).Magnitude
+                if Distance < Values.Kill_Range then
+                    Target = v
+                end
+            end
+        end
+        return Target
+    end
+    getgenv().Connection.KillEnities = RS.Heartbeat:Connect(function(deltaTime)
+        local target = Entities()
+        if target then
+            local args = {
+                [1] = Entities(),
+                [2] = "30"
+            } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
+        end
+    end)
+end
+
+
+
+function Funcs.WalkSpeed(Value,Bool)
+    getgenv().Config.WalkSpeed = Bool
+    if not getgenv().Config.WalkSpeed and getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
+    if getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
+
+    getgenv().WalkSpeed = game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end)
+
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+end
+
+
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Univers", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest",IntroEnabled = false})
+local Main = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",PremiumOnly = false})
+local Lplayer = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",PremiumOnly = false})
+
+
+Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
+    Funcs.SilentKill(Value)
+end})
+
+Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
+    Funcs.KillEnities(Value)
+end})
+
+Main:AddSlider({Name = "WalkSpeed",Min = 16,Max = 100,Default = 30,Color = Color3.fromRGB(255,255,255),Increment = 1,ValueName = "",Callback = function(Value)
+    getgenv().SpVa = Value
+end})
+
+Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
+    getgenv().sPEED = Value
+    if not sPEED and getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
+    while sPEED and task.wait(.1) do
+        spawn(function()
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                Funcs.WalkSpeed(30,Value)
+            end
+        end)
+    end
+end})
+
+UIS.InputBegan:Connect(function(input, gameProcessedEvent)
+	if gameProcessedEvent then return end
+	
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		Inputs[input.UserInputType] = true
+	end
+	
+	if input.KeyCode == Enum.KeyCode.LeftControl then
+		Inputs[input.KeyCode] = true
+	end
+	
+	if Inputs[Enum.KeyCode.LeftControl] and Inputs[Enum.UserInputType.MouseButton1] then
+		local player = game.Players.LocalPlayer
+		local character = player.Character
+		if character then
+			local mouse = player:GetMouse()
+			if mouse.Target then
+				character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position)
+			end
+		end
+	end
+end)
+
+UIS.InputEnded:Connect(function(input, gameProcessedEvent)
+	if gameProcessedEvent then return end
+	
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		Inputs[input.UserInputType] = nil
+	end
+	
+	if input.KeyCode == Enum.KeyCode.LeftControl then
+		Inputs[input.KeyCode] = nil
+	end
+end)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+
+
+--game.Workspace.Entities
