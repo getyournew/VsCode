@@ -31,8 +31,7 @@ local Funcs = {}
 
 function Funcs.SilentKill(Bool)
     getgenv().Config.SilentKill = Bool
-    if not getgenv().Config.SilentKill then Connection.SilentKill:Disconnect() return true end
-    if Connection.SilentKill then Connection.SilentKill:Disconnect() end
+    if Connection.SilentKill then Connection.SilentKill:Disconnect() print("Dised") end
     local function GetPlayer()
         for _,v in pairs(game:GetService("Players"):GetPlayers()) do
             if v ~= game.Players.LocalPlayer then
@@ -77,8 +76,7 @@ end
 
 function Funcs.KillEnities(Bool)
     getgenv().Config.KillEnities = Bool
-    if not getgenv().Config.KillEnities then Connection.KillEnities:Disconnect() return true end
-    if Connection.KillEnities then Connection.KillEnities:Disconnect() end
+    if Connection.KillEnities then Connection.KillEnities:Disconnect() print("Dised") end
     local function Entities()
         for _,v in pairs(game.Workspace.Entities:GetChildren()) do
             if v:FindFirstChild("HumanoidRootPart") then
