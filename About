@@ -199,7 +199,7 @@ local Dropdown1 = Main:AddDropdown({Name = "Select Player",Default = "None",Opti
 end})
 
 Main:AddButton({Name = "Refresh Whitelist",Callback = function()
-    Dropdown:Refresh(Player.Dropdown1,true)
+    Dropdown:Refresh(Player.Whitelist,true)
 end})
 
 
