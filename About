@@ -39,7 +39,7 @@ function Funcs.SilentKill(Bool)
     local function GetPlayer()
         for _,v in pairs(game:GetService("Players"):GetPlayers()) do
             if v ~= game.Players.LocalPlayer then
-                if table.find(Player.Whitelist,tostring(v)) then
+                if not table.find(Player.Whitelist,tostring(v)) then
                     if v.Team ~= game.Players.LocalPlayer.Team then
                         if v.Character ~= nil then
                             if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
