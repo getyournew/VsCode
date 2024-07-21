@@ -199,8 +199,11 @@ local Dropdown1 = Main:AddDropdown({Name = "Select Player",Default = "None",Opti
 end})
 
 Main:AddButton({Name = "Refresh Whitelist",Callback = function()
-    Dropdown:Refresh(Player.Whitelist,true)
+    Dropdown1:Refresh(Player.Whitelist,true)
 end})
+
+
+
 
 
 UIS.InputBegan:Connect(function(input, gameProcessedEvent)
