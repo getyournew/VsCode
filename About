@@ -125,7 +125,7 @@ end
 
 function removeByName(t, name)
     for i, v in ipairs(t) do
-        if v.name == name then
+        if v == name then
             table.remove(t, i)
             return true
         end
@@ -166,6 +166,13 @@ Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
     end
 end})
 
+local Section = Main:AddSection({Name = "Whitelist"})
+
+
+local Dropdown1 = Main:AddDropdown({Name = "List",Default = "None",Options = {"None"},Callback = function(Value)
+end})
+
+
 
 local Section = Main:AddSection({Name = "Player"})
 
@@ -184,23 +191,19 @@ end})
 
 Main:AddButton({Name = "Remove Whitelist",Callback = function()
     removeByName(Player.Whitelist,Player.PlayerSelect)
+    Dropdown1.Options = {}
+    Dropdown1:Refresh(Player.Whitelist,true)
+
 end})
 
 
 Main:AddButton({Name = "Add Whitelist",Callback = function()
     table.insert(Player.Whitelist,Player.PlayerSelect)
-end})
-
-local Section = Main:AddSection({Name = "Whitelist"})
-
-
-
-local Dropdown1 = Main:AddDropdown({Name = "Select Player",Default = "None",Options = {"None"},Callback = function(Value)
-end})
-
-Main:AddButton({Name = "Refresh Whitelist",Callback = function()
+    Dropdown1.Options = {}
     Dropdown1:Refresh(Player.Whitelist,true)
+
 end})
+
 
 
 
