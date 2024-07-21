@@ -20,12 +20,18 @@ if getgenv().Values then table.clear(getgenv().Values) end
 getgenv().Config = {}
 
 getgenv().Values = {
-    Kill_Range = 20
+    Kill_Range = 20,
 }
 
 getgenv().Connection = {}
 
 local Funcs = {}
+local Player = {
+    Whitelist = {},
+    Dropdown = {},
+    PlayerSelect = nil
+}
+
 
 function Funcs.SilentKill(Bool)
     getgenv().Config.SilentKill = Bool
@@ -33,24 +39,26 @@ function Funcs.SilentKill(Bool)
     local function GetPlayer()
         for _,v in pairs(game:GetService("Players"):GetPlayers()) do
             if v ~= game.Players.LocalPlayer then
-                if v.Team ~= game.Players.LocalPlayer.Team then
-                    if v.Character ~= nil then
-                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
-                                if Distance < Values.Kill_Range then
-                                    Target = v.Character
+                if table.find(Player.Whitelist,tostring(v)) then
+                    if v.Team ~= game.Players.LocalPlayer.Team then
+                        if v.Character ~= nil then
+                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                                if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                    local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                    if Distance < Values.Kill_Range then
+                                        Target = v.Character
+                                    end
                                 end
                             end
                         end
-                    end
-                else
-                    if v.Character ~= nil then
-                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
-                                if Distance < Values.Kill_Range then
-                                    Target = v.Character
+                    else
+                        if v.Character ~= nil then
+                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                                if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                    local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                    if Distance < Values.Kill_Range then
+                                        Target = v.Character
+                                    end
                                 end
                             end
                         end
@@ -115,6 +123,15 @@ function Funcs.WalkSpeed(Value,Bool)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
 end
 
+function removeByName(t, name)
+    for i, v in ipairs(t) do
+        if v.name == name then
+            table.remove(t, i)
+            return true
+        end
+    end
+    return false
+end
 
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
@@ -146,6 +163,30 @@ Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
         end)
     end
 end})
+
+
+local Dropdown = Main:AddDropdown({Name = "Select Player",Default = "None",Options = {"None"},Callback = function(Value)
+	Player.PlayerSelect = Value
+end})
+
+Main:AddButton({Name = "Refresh player",Callback = function()
+    Player.Dropdown = {}
+    for i,v in next, game.Players:GetChildren() do
+        table.insert(Player.Dropdown,tostring(v))
+    end
+    Dropdown:Refresh(Player.Dropdown,true)
+end})
+
+
+Main:AddButton({Name = "Remove Whitelist",Callback = function()
+    removeByName(Player.Whitelist,Player.PlayerSelect)
+end})
+
+
+Main:AddButton({Name = "Add Whitelist",Callback = function()
+    table.insert(Player.Whitelist,Player.PlayerSelect)
+end})
+
 
 UIS.InputBegan:Connect(function(input, gameProcessedEvent)
 	if gameProcessedEvent then return end
@@ -184,5 +225,6 @@ end)
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 
-
 --game.Workspace.Entities
+
+
