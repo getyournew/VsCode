@@ -139,6 +139,8 @@ local Window = OrionLib:MakeWindow({Name = "Univers", HidePremium = false, SaveC
 local Main = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",PremiumOnly = false})
 local Lplayer = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",PremiumOnly = false})
 
+local Section = Main:AddSection({Name = "Main"})
+
 
 Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
     Funcs.SilentKill(Value)
@@ -165,6 +167,8 @@ Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
 end})
 
 
+local Section = Main:AddSection({Name = "Player"})
+
 local Dropdown = Main:AddDropdown({Name = "Select Player",Default = "None",Options = {"None"},Callback = function(Value)
 	Player.PlayerSelect = Value
 end})
@@ -185,6 +189,17 @@ end})
 
 Main:AddButton({Name = "Add Whitelist",Callback = function()
     table.insert(Player.Whitelist,Player.PlayerSelect)
+end})
+
+local Section = Main:AddSection({Name = "Whitelist"})
+
+
+
+local Dropdown1 = Main:AddDropdown({Name = "Select Player",Default = "None",Options = {"None"},Callback = function(Value)
+end})
+
+Main:AddButton({Name = "Refresh Whitelist",Callback = function()
+    Dropdown:Refresh(Player.Dropdown1,true)
 end})
 
 
