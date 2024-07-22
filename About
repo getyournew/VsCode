@@ -13,114 +13,38 @@ local UIS = game:GetService("UserInputService")
 local Lplayer = Player.LocalPlayer
 local Character = Lplayer.Character
 
-local Inputs = {}
-
-if getgenv().Values then table.clear(getgenv().Values) end
-
 getgenv().Config = {}
-
-getgenv().Values = {
-    Kill_Range = 20,
-}
 
 getgenv().Connection = {}
 
+
 local Funcs = {}
-local Player = {
-    Whitelist = {},
-    Dropdown = {},
-    PlayerSelect = nil
+
+local Values = {
+    WalkSpeed = 16
 }
-
-
-function Funcs.SilentKill(Bool)
-    getgenv().Config.SilentKill = Bool
-    if Connection.SilentKill then Connection.SilentKill:Disconnect() print("Dised") end
-    local function GetPlayer()
-        for _,v in pairs(game:GetService("Players"):GetPlayers()) do
-            if v ~= game.Players.LocalPlayer then
-                if not table.find(Player.Whitelist,tostring(v)) then
-                    if v.Team ~= game.Players.LocalPlayer.Team then
-                        if v.Character ~= nil then
-                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-                                if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                                    local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
-                                    if Distance < Values.Kill_Range then
-                                        Target = v.Character
-                                    end
-                                end
-                            end
-                        end
-                    else
-                        if v.Character ~= nil then
-                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-                                if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                                    local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
-                                    if Distance < Values.Kill_Range then
-                                        Target = v.Character
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        return Target
-    end
-    if getgenv().Config.SilentKill then
-        getgenv().Connection.SilentKill = RS.Heartbeat:Connect(function(deltaTime)
-            local target = GetPlayer()
-            if target then
-                local args = {
-                    [1] = target,
-                    [2] = "4"
-                } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
-            end
-        end)
-    end
-end
-
-
-function Funcs.KillEnities(Bool)
-    getgenv().Config.KillEnities = Bool
-    if Connection.KillEnities then Connection.KillEnities:Disconnect() print("Dised") end
-    local function Entities()
-        for _,v in pairs(game.Workspace.Entities:GetChildren()) do
-            if v:FindFirstChild("HumanoidRootPart") then
-                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.HumanoidRootPart.Position).Magnitude
-                if Distance < Values.Kill_Range then
-                    Target = v
-                end
-            end
-        end
-        return Target
-    end
-    if getgenv().Config.KillEnities then
-        getgenv().Connection.KillEnities = RS.Heartbeat:Connect(function(deltaTime)
-            local target = Entities()
-            if target then
-                local args = {
-                    [1] = Entities(),
-                    [2] = "4"
-                } game:GetService("ReplicatedStorage").Systems.ActionsSystem.Network.Attack:InvokeServer(unpack(args))
-            end
-        end)
-    end
-end
-
-
 
 function Funcs.WalkSpeed(Value,Bool)
     getgenv().Config.WalkSpeed = Bool
     if not getgenv().Config.WalkSpeed and getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
     if getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
 
-    getgenv().WalkSpeed = game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end)
+    if getgenv().Config.WalkSpeed then
+        getgenv().WalkSpeed = game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Values.WalkSpeed
+        end)
+    
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Values.WalkSpeed
+    end
+end
 
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+function Funcs.UpSpeed(Value)
+    Values.WalkSpeed = Value
+    Funcs.WalkSpeed(Values.WalkSpeed, getgenv().Config.WalkSpeed)
+end
+
+function Funcs.InfStorage(Bool)
+    getgenv().InfStorage = Bool
 end
 
 function removeByName(t, name)
@@ -141,17 +65,14 @@ local Lplayer = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",P
 
 local Section = Main:AddSection({Name = "Main"})
 
-
-Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
-    Funcs.SilentKill(Value)
+Main:AddToggle({Name = "Inf Storage",Default = false,Callback = function(Value)
+    Funcs.InfStorage(Value)
 end})
 
-Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
-    Funcs.KillEnities(Value)
-end})
+
 
 Main:AddSlider({Name = "WalkSpeed",Min = 16,Max = 100,Default = 30,Color = Color3.fromRGB(255,255,255),Increment = 1,ValueName = "",Callback = function(Value)
-    getgenv().SpVa = Value
+    Funcs.UpSpeed(Value)
 end})
 
 Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
@@ -166,86 +87,14 @@ Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
     end
 end})
 
-local Section = Main:AddSection({Name = "Whitelist"})
-
-
-local Dropdown1 = Main:AddDropdown({Name = "List",Default = "None",Options = {"None"},Callback = function(Value)
-end})
-
-
-
-local Section = Main:AddSection({Name = "Player"})
-
-local Dropdown = Main:AddDropdown({Name = "Select Player",Default = "None",Options = {"None"},Callback = function(Value)
-	Player.PlayerSelect = Value
-end})
-
-Main:AddButton({Name = "Refresh player",Callback = function()
-    Player.Dropdown = {}
-    for i,v in next, game.Players:GetChildren() do
-        table.insert(Player.Dropdown,tostring(v))
-    end
-    Dropdown:Refresh(Player.Dropdown,true)
-end})
-
-
-Main:AddButton({Name = "Remove Whitelist",Callback = function()
-    removeByName(Player.Whitelist,Player.PlayerSelect)
-    Dropdown1.Options = {}
-    Dropdown1:Refresh(Player.Whitelist,true)
-
-end})
-
-
-Main:AddButton({Name = "Add Whitelist",Callback = function()
-    table.insert(Player.Whitelist,Player.PlayerSelect)
-    Dropdown1.Options = {}
-    Dropdown1:Refresh(Player.Whitelist,true)
-
-end})
-
-
-
-
-
 
 UIS.InputBegan:Connect(function(input, gameProcessedEvent)
-	if gameProcessedEvent then return end
-	
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		Inputs[input.UserInputType] = true
-	end
-	
-	if input.KeyCode == Enum.KeyCode.LeftControl then
-		Inputs[input.KeyCode] = true
-	end
-	
-	if Inputs[Enum.KeyCode.LeftControl] and Inputs[Enum.UserInputType.MouseButton1] then
-		local player = game.Players.LocalPlayer
-		local character = player.Character
-		if character then
-			local mouse = player:GetMouse()
-			if mouse.Target then
-				character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position)
-			end
-		end
-	end
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.E and getgenv().InfStorage then
+        for i,v in next, game.Players.LocalPlayer.Backpack:GetChildren() do
+            if v:IsA("Tool") then
+                v.Parent = game.Players.LocalPlayer.Character
+            end
+        end
+    end
 end)
-
-UIS.InputEnded:Connect(function(input, gameProcessedEvent)
-	if gameProcessedEvent then return end
-	
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		Inputs[input.UserInputType] = nil
-	end
-	
-	if input.KeyCode == Enum.KeyCode.LeftControl then
-		Inputs[input.KeyCode] = nil
-	end
-end)
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-
---game.Workspace.Entities
-
-
