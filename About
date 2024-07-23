@@ -21,8 +21,92 @@ getgenv().Connection = {}
 local Funcs = {}
 
 local Values = {
-    WalkSpeed = 16
+    WalkSpeed = 16,
+    SilentKillRange = 10,
 }
+
+function Funcs.SilentKill(Bool)
+    getgenv().Config.SilentKill = Bool
+    if getgenv().Connection.SilentKill then getgenv().Connection.SilentKill:Disconnect() end
+    local function GetPlayer()
+        for _,v in pairs(game:GetService("Players"):GetPlayers()) do
+            if v ~= game.Players.LocalPlayer then
+                if v.Team ~= game.Players.LocalPlayer.Team then
+                    if v.Character ~= nil then
+                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                if Distance < Values.SilentKillRange then
+                                    return v.Character
+                                end
+                            end
+                        end
+                    end
+                else
+                    if v.Character ~= nil then
+                        if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                            if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+                                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).Magnitude
+                                if Distance < Values.SilentKillRange then
+                                    return v.Character
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return
+    end
+    if getgenv().Config.SilentKill then
+        getgenv().Connection.SilentKill = RS.Heartbeat:Connect(function(deltaTime)
+            local target = GetPlayer()
+            if target then
+                game.ReplicatedStorage.Events.SwingTool:FireServer({target})
+            end
+        end)
+    end
+end
+
+function Funcs.SilentEnities(Bool)
+    getgenv().Config.SilentEnities = Bool
+    if getgenv().Connection.SilentEnities then getgenv().Connection.SilentEnities:Disconnect() end
+    local function clearPartsAroundPlayer(player)
+        local function getPartsInSphere(center, radius)
+            local partsInSphere = {}
+    
+            local regionSize = Vector3.new(radius, radius, radius)
+            local region = Region3.new(center - regionSize, center + regionSize)
+    
+            local partsInRegion = workspace:FindPartsInRegion3(region, nil, math.huge)
+    
+            for _, part in pairs(partsInRegion) do
+                if part:IsA("BasePart") and (part.Position - center).Magnitude <= radius then
+                    if part.Parent:FindFirstChild("Health") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) then
+                        table.insert(partsInSphere, part.Parent)
+                    end
+                end
+            end
+            return partsInSphere
+        end
+        local character = player.Character
+        local target = nil
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local playerPos = character.HumanoidRootPart.Position
+            local partsToClear = getPartsInSphere(playerPos, 30)
+            target = partsToClear
+        end
+        return target
+    end
+    if getgenv().Config.SilentEnities then
+        getgenv().Connection.SilentEnities = RS.Heartbeat:Connect(function(deltaTime)
+            local target =  clearPartsAroundPlayer(game.Players.LocalPlayer)
+            if #target > 0  then
+                game.ReplicatedStorage.Events.SwingTool:FireServer(target)
+            end
+        end)
+    end
+end
 
 function Funcs.WalkSpeed(Value,Bool)
     getgenv().Config.WalkSpeed = Bool
@@ -43,20 +127,6 @@ function Funcs.UpSpeed(Value)
     Funcs.WalkSpeed(Values.WalkSpeed, getgenv().Config.WalkSpeed)
 end
 
-function Funcs.InfStorage(Bool)
-    getgenv().InfStorage = Bool
-end
-
-function removeByName(t, name)
-    for i, v in ipairs(t) do
-        if v == name then
-            table.remove(t, i)
-            return true
-        end
-    end
-    return false
-end
-
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 local Window = OrionLib:MakeWindow({Name = "Univers", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest",IntroEnabled = false})
@@ -65,17 +135,20 @@ local Lplayer = Window:MakeTab({Name = "Main",Icon = "rbxassetid://4483345998",P
 
 local Section = Main:AddSection({Name = "Main"})
 
-Main:AddToggle({Name = "Inf Storage",Default = false,Callback = function(Value)
-    Funcs.InfStorage(Value)
+Main:AddToggle({Name = "Slient Kill",Default = false,Callback = function(Value)
+    Funcs.SilentKill(Value)
 end})
 
 
+Main:AddToggle({Name = "Slient Enities",Default = false,Callback = function(Value)
+    Funcs.SilentEnities(Value)
+end})
 
-Main:AddSlider({Name = "WalkSpeed",Min = 16,Max = 100,Default = 30,Color = Color3.fromRGB(255,255,255),Increment = 1,ValueName = "",Callback = function(Value)
+Lplayer:AddSlider({Name = "WalkSpeed",Min = 16,Max = 100,Default = 30,Color = Color3.fromRGB(255,255,255),Increment = 1,ValueName = "",Callback = function(Value)
     Funcs.UpSpeed(Value)
 end})
 
-Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
+Lplayer:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
     getgenv().sPEED = Value
     if not sPEED and getgenv().WalkSpeed then getgenv().WalkSpeed:Disconnect() end
     while sPEED and task.wait(.1) do
@@ -87,14 +160,4 @@ Main:AddToggle({Name = "WalkSpeed",Default = false,Callback = function(Value)
     end
 end})
 
-
-UIS.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
-    if input.KeyCode == Enum.KeyCode.E and getgenv().InfStorage then
-        for i,v in next, game.Players.LocalPlayer.Backpack:GetChildren() do
-            if v:IsA("Tool") then
-                v.Parent = game.Players.LocalPlayer.Character
-            end
-        end
-    end
-end)
+game.Players.LocalPlayer.character.Humanoid.MaxSlopeAngle = 99
