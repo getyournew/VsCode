@@ -1,4 +1,4 @@
-repeat task.wait() until game:IsLoaded()
+\repeat task.wait() until game:IsLoaded()
 
 if getgenv().Connection then
     for i,v in next, getgenv().Connection do
@@ -82,7 +82,7 @@ function Funcs.SilentEnities(Bool)
     
             for _, part in pairs(partsInRegion) do
                 if part:IsA("BasePart") and (part.Position - center).Magnitude <= radius then
-                    if part.Parent:FindFirstChild("Health") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not table.find(game.Players:GetPlayers(),game.Players[tostring(part.Parent)]) then
+                    if part.Parent:FindFirstChild("Health") and not part:IsDescendantOf(game.Players.LocalPlayer.Character) and not part.Parent:FindFirstChild("Humanoid") then
                         table.insert(partsInSphere, part.Parent)
                     end
                 end
